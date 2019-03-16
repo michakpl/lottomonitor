@@ -6,12 +6,22 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
+	"time"
 )
 
 func CheckNumbers() {
 	lines := getNumbers()
 
-	buildResults(lines)
+	r := buildResults(lines)
+	currentDate := time.Now().Format("2006-01-02")
+
+	if currentDate == r.date {
+		fmt.Println("Today is lottery day")
+		return
+	}
+
+	fmt.Println("Today is not a lottery day")
 }
 
 func getNumbers() []string {
@@ -44,8 +54,25 @@ func getNumbers() []string {
 	return lines
 }
 
-func buildResults(lines []string) {
+func buildResults(lines []string) result {
+	r := result{}
 	for index, element := range lines {
-		fmt.Printf("%d: %s \n", index, element)
+		if index == 0 {
+			r.date = element
+		} else if (index > 0) && (index < 6) {
+			number, _ := strconv.Atoi(element)
+			r.numbers = append(r.numbers, number)
+		} else if index >= 6 {
+			number, _ := strconv.Atoi(element)
+			r.extraNumber = append(r.extraNumber, number)
+		}
 	}
+
+	return r
+}
+
+type result struct {
+	date        string
+	numbers     []int
+	extraNumber []int
 }
