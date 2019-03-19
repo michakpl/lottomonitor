@@ -3,6 +3,7 @@ package eurojackpot
 import (
 	"bufio"
 	"fmt"
+	"github.com/thoas/go-funk"
 	"io"
 	"net/http"
 	"os"
@@ -17,11 +18,18 @@ func CheckNumbers() {
 	currentDate := time.Now().Format("2006-01-02")
 
 	if currentDate == r.date {
-		fmt.Println("Today is lottery day")
+		myNumbers, myExtraNumbers := getChoosenNumbers()
+		hitNumbers := funk.Intersect(r.numbers, myNumbers).([]int)
+		hitNumbersCount := len(hitNumbers)
+
+		hitExtraNumbers := funk.Intersect(r.extraNumbers, myExtraNumbers).([]int)
+		hitExtraNumbersCount := len(hitExtraNumbers)
+
+		hitResult := checkWin(hitNumbersCount, hitExtraNumbersCount)
+
+		fmt.Println(hitResult)
 		return
 	}
-
-	fmt.Println("Today is not a lottery day")
 }
 
 func getNumbers() []string {
@@ -64,15 +72,34 @@ func buildResults(lines []string) result {
 			r.numbers = append(r.numbers, number)
 		} else if index >= 6 {
 			number, _ := strconv.Atoi(element)
-			r.extraNumber = append(r.extraNumber, number)
+			r.extraNumbers = append(r.extraNumbers, number)
 		}
 	}
 
 	return r
 }
 
+func getChoosenNumbers() ([]int, []int) {
+	numbers := []int{5,19,20,35,49}
+	extraNumbers := []int{2,7}
+
+	return numbers, extraNumbers
+}
+
+func checkWin(hitNumbers int,  hitExtraNumbers int) bool {
+	if hitNumbers >= 3 {
+		return true
+	} else if (hitExtraNumbers >= 2) && (hitNumbers >= 1) {
+		return true
+	} else if (hitExtraNumbers >= 1) && (hitNumbers >= 2) {
+		return true
+	}
+
+	return false
+}
+
 type result struct {
-	date        string
-	numbers     []int
-	extraNumber []int
+	date         string
+	numbers      []int
+	extraNumbers []int
 }
