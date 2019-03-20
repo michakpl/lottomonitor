@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/thoas/go-funk"
 	"io"
+	"lottomonitor/notification"
 	"net/http"
 	"os"
 	"strconv"
@@ -27,8 +28,13 @@ func CheckNumbers() {
 
 		hitResult := checkWin(hitNumbersCount, hitExtraNumbersCount)
 
-		fmt.Println(hitResult)
-		return
+		sendNotification(hitResult)
+	}
+}
+
+func sendNotification(hitResult bool) {
+	if hitResult {
+		notification.Send("Eurojackpot")
 	}
 }
 
