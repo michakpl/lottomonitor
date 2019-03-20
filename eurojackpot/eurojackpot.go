@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -15,14 +16,13 @@ func CheckNumbers() {
 	lines := getNumbers()
 
 	r := buildResults(lines)
-	currentDate := time.Now().Format("2006-01-02")
+	myCoupon := getChoosenNumbers()
 
-	if currentDate == r.date {
-		myNumbers, myExtraNumbers := getChoosenNumbers()
-		hitNumbers := funk.Intersect(r.numbers, myNumbers).([]int)
+	if myCoupon.date == r.date {
+		hitNumbers := funk.Intersect(r.numbers, myCoupon.numbers).([]int)
 		hitNumbersCount := len(hitNumbers)
 
-		hitExtraNumbers := funk.Intersect(r.extraNumbers, myExtraNumbers).([]int)
+		hitExtraNumbers := funk.Intersect(r.extraNumbers, myCoupon.extraNumbers).([]int)
 		hitExtraNumbersCount := len(hitExtraNumbers)
 
 		hitResult := checkWin(hitNumbersCount, hitExtraNumbersCount)
@@ -79,11 +79,25 @@ func buildResults(lines []string) result {
 	return r
 }
 
-func getChoosenNumbers() ([]int, []int) {
-	numbers := []int{5,19,20,35,49}
-	extraNumbers := []int{2,7}
+func getChoosenNumbers() result {
+	couponString := os.Getenv("EUROJACKPOT_COUPON")
+	couponSlices := strings.Split(couponString, ",")
 
-	return numbers, extraNumbers
+	r := result{
+		date: time.Now().Format("2006-01-02"),
+	}
+
+	for index, element := range couponSlices {
+		if (index > 0) && (index < 5) {
+			number, _ := strconv.Atoi(element)
+			r.numbers = append(r.numbers, number)
+		} else if index >= 5 {
+			number, _ := strconv.Atoi(element)
+			r.extraNumbers = append(r.extraNumbers, number)
+		}
+	}
+
+	return r
 }
 
 func checkWin(hitNumbers int,  hitExtraNumbers int) bool {
